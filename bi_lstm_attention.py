@@ -33,7 +33,9 @@ parser.add_argument('--train_path', action='store', dest='train_path',
                     help='Path to train data')
 parser.add_argument('--dev_path', action='store', dest='dev_path',
                     help='Path to dev data')
-parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='./experiment',
+parser.add_argument('--epochs', default=20,
+                    help='Number of Epochs to Run')
+parser.add_argument('--expt_dir', action='store', dest='expt_dir', default='./bi_lstm_attention_model',
                     help='Path to experiment directory. If load_checkpoint is True, then path to checkpoint directory has to be provided')
 parser.add_argument('--load_checkpoint', action='store', dest='load_checkpoint',
                     help='The name of the checkpoint to load, usually an encoded time string')
@@ -118,12 +120,11 @@ else:
         # optimizer.set_scheduler(scheduler)
 
     # train
-    t = SupervisedTrainer(loss=loss, batch_size=32,
-                          checkpoint_every=50,
-                          print_every=10, expt_dir=opt.expt_dir)
+    t = SupervisedTrainer(loss=loss, batch_size=128, checkpoint_every_epoch=5,
+                          print_every_batch=50, expt_dir=opt.expt_dir)
 
     seq2seq = t.train(seq2seq, train,
-                      num_epochs=6, dev_data=dev,
+                      num_epochs=int(opt.epochs), dev_data=dev,
                       optimizer=optimizer,
                       teacher_forcing_ratio=0.5,
                       resume=opt.resume)

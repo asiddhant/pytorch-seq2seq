@@ -1,4 +1,9 @@
+*.pt
+*.text
+*.source
 *.pyc
+*.target
+*.txt
 .idea
 checkpoint
 checkpoint/*

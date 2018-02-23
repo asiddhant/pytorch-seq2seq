@@ -23,11 +23,9 @@ class SupervisedTrainer(object):
             by default it makes a folder in the current directory to store the details (default: `experiment`).
         loss (seq2seq.loss.loss.Loss, optional): loss for training, (default: seq2seq.loss.NLLLoss)
         batch_size (int, optional): batch size for experiment, (default: 64)
-        checkpoint_every (int, optional): number of epochs to checkpoint after, (default: 100)
     """
     def __init__(self, expt_dir='experiment', loss=NLLLoss(), batch_size=64,
-                 random_seed=None,
-                 checkpoint_every=100, print_every=100):
+                 random_seed=None, checkpoint_every_epoch=10, print_every_batch=100):
         self._trainer = "Simple Trainer"
         self.random_seed = random_seed
         if random_seed is not None:
@@ -36,8 +34,8 @@ class SupervisedTrainer(object):
         self.loss = loss
         self.evaluator = Evaluator(loss=self.loss, batch_size=batch_size)
         self.optimizer = None
-        self.checkpoint_every = checkpoint_every
-        self.print_every = print_every
+        self.print_every = print_every_batch
+        self.checkpoint_every = checkpoint_every_epoch
 
         if not os.path.isabs(expt_dir):
             expt_dir = os.path.join(os.getcwd(), expt_dir)
@@ -115,13 +113,13 @@ class SupervisedTrainer(object):
                         print_loss_avg)
                     log.info(log_msg)
 
-                # Checkpoint
-                if step % self.checkpoint_every == 0 or step == total_steps:
-                    Checkpoint(model=model,
-                               optimizer=self.optimizer,
-                               epoch=epoch, step=step,
-                               input_vocab=data.fields[seq2seq.src_field_name].vocab,
-                               output_vocab=data.fields[seq2seq.tgt_field_name].vocab).save(self.expt_dir)
+            # Checkpoint
+            if ((epoch+1) % self.checkpoint_every == 0) or ((epoch+1) == n_epochs):
+                Checkpoint(model=model,
+                           optimizer=self.optimizer,
+                           epoch=epoch, step=step,
+                           input_vocab=data.fields[seq2seq.src_field_name].vocab,
+                           output_vocab=data.fields[seq2seq.tgt_field_name].vocab).save(self.expt_dir)
 
             if step_elapsed == 0: continue
 
